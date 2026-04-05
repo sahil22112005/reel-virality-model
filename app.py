@@ -1,32 +1,82 @@
-# 📱 Trending Reel on Instagram Modelling
+import streamlit as st
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
 
-This repository contains a mathematical simulation built with Python and Streamlit. It models the lifecycle of a trending Instagram Reel, predicting its virality using a continuous deterministic Growth-Decay mathematical model.
+# --- Simulation Function ---
+def simulate_virality(initial_hook, share_rate, decay_rate, days):
+    t = np.linspace(0.1, days, 200)
+    views = initial_hook * (t**share_rate) * np.exp(-decay_rate * t)
+    return t, views
 
+# --- UI Layout ---
+st.set_page_config(page_title="Instagram Reel Virality Model", layout="centered")
+
+st.title("📱 Trending Reel on Instagram Modelling")
+st.write("Model: Growth-Decay & Peak Analysis")
+
+# --- Sidebar Inputs ---
+st.sidebar.header("⚙️ Input Parameters")
+initial_hook = st.sidebar.slider("Initial Hook (A)", 100, 5000, 1000, step=100)
+share_rate = st.sidebar.slider("Share Rate / Growth (k)", 0.5, 8.0, 4.9, step=0.1)
+decay_rate = st.sidebar.slider("Decay Rate / Fatigue (λ)", 0.1, 3.0, 0.6, step=0.1)
+days = st.sidebar.slider("Simulation Days", 5, 30, 18, step=1)
+
+# --- Project Overview ---
+st.markdown("""
 ## 📌 Project Overview
-In the modern digital era, understanding social media algorithms is crucial for content distribution. This project translates abstract algorithmic signals (sharing velocity and user fatigue) into a predictable time-series curve. 
+This model predicts **Instagram Reel Virality** over time using:
+- 📈 **Polynomial Growth** (Driven by user sharing and algorithm push)
+- 📉 **Exponential Decay** (Driven by trend fatigue and audience saturation)
+""")
 
-**Use Cases:**
-- 📈 Predicting the Peak Viral Day of a video.
-- ⚙️ Calculating maximum potential views based on initial traction.
-- 🚀 Optimizing content posting schedules and digital marketing ad spend.
+# --- Run Simulation ---
+t_data, views_data = simulate_virality(initial_hook, share_rate, decay_rate, days)
 
-## 📘 Mathematical Model
-The simulation is driven by a modified Gamma-distribution formula:
-`V(t) = A * t^k * e^(-λt)`
+peak_day = share_rate / decay_rate
+max_views = initial_hook * (peak_day**share_rate) * np.exp(-decay_rate * peak_day)
 
-**Variables:**
-- `V(t)` = Total daily views on day `t`.
-- `A` = Initial Hook Factor (Algorithm's initial testing reach).
-- `k` = Share Rate (The growth coefficient driven by users sharing the reel).
-- `λ` = Decay Rate (The fatigue constant pulling views down as the trend dies).
+# --- Graph ---
+st.subheader("📈 Viral Growth & Decay Curve")
+fig, ax = plt.subplots(figsize=(8, 4))
+ax.plot(t_data, views_data, color="#E1306C", linewidth=2.5, label="Daily Views")
+ax.axvline(x=peak_day, color='black', linestyle='--', label=f"Peak Day ({peak_day:.1f})")
+ax.fill_between(t_data, views_data, color="#E1306C", alpha=0.2)
+ax.set_xlabel("Days Since Upload")
+ax.set_ylabel("Daily Views")
+ax.legend()
+st.pyplot(fig)
 
-**Peak Analysis:**
-Using differential calculus, the exact peak of virality is derived as `t_peak = k / λ`.
+# --- Insights & Metrics ---
+st.subheader("🔍 Key Insights")
+col1, col2 = st.columns(2)
+with col1:
+    st.metric("🔥 Peak Viral Day", f"Day {peak_day:.1f}")
+with col2:
+    st.metric("👀 Max Views on Peak", f"{int(max_views):,}")
 
-## 🚀 How to Run the Application Locally
-To run this dashboard on your own machine, follow these steps:
+# --- Interpretation Logic ---
+if share_rate < decay_rate:
+    status = "Trend Failure (Shadowbanned)"
+    color = "🚨"
+elif decay_rate < 0.4:
+    status = "Evergreen Content (Long Tail)"
+    color = "✅"
+else:
+    status = "Standard Viral Hit"
+    color = "🔥"
 
-1. **Clone the repository:**
-   ```bash
-   git clone [https://github.com/your-username/your-repo-name.git](https://github.com/your-username/your-repo-name.git)
-   cd your-repo-name
+st.success(f"""
+💡 **Interpretation:**
+* **k < λ** → Content decays faster than it grows.
+* **Low λ (< 0.4)** → Strong retention.
+* **High k & High λ** → Massive immediate spike, rapid death.
+
+Current Trend Status: **{color} {status}**
+""")
+
+# --- Mathematical Model ---
+st.markdown("---")
+st.subheader("📘 Mathematical Model")
+st.latex(r"V(t) = A \cdot t^k \cdot e^{-\lambda t}")
+st.latex(r"t_{peak} = \frac{k}{\lambda}")
