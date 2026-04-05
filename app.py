@@ -80,3 +80,19 @@ st.markdown("---")
 st.subheader("📘 Mathematical Model")
 st.latex(r"V(t) = A \cdot t^k \cdot e^{-\lambda t}")
 st.latex(r"t_{peak} = \frac{k}{\lambda}")
+
+# --- Conclusion ---
+st.markdown("---")
+st.subheader("📌 Conclusion")
+
+st.write(f"""
+🔹 **Initial Push:** The algorithm started by showing the reel to **{initial_hook}** users.  
+
+🔹 **Virality Engine:** The share rate (k={share_rate}) drove the content to peak on **Day {peak_day:.1f}**.  
+
+🔹 **Maximum Reach:** At its peak, the reel achieved **{int(max_views):,}** views in a single day.  
+
+🔹 **Trend Lifespan:** Driven by a decay rate of λ={decay_rate}, the overall trend status is categorized as a **{status}**.  
+
+👉 **Takeaway:** This model demonstrates that while the initial algorithmic hook is helpful, sustained virality depends entirely on maximizing the ratio of user sharing (k) against audience fatigue (λ).
+""")
